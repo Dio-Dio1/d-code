@@ -18,13 +18,17 @@ npm run dev
 
 ## What's built
 
-- Sidebar navigation and dashboard
-- Problems page — search, difficulty filters, topic tags
-- Leaderboard — global, friends, and weekly tabs with tier badges
+- Dashboard with stats and activity chart
+- Problems page with search and filters
+- Leaderboard with tier badges and ranking
+- Profile with achievements and activity feed
+- Match history and solved problems
+- Friends list with requests and suggestions
+- Settings — account, editor preferences, notifications
+- Daily coding puzzles with interactive feedback
 
-## Roadmap
+## Up next
 
-- [ ] Profile and match history
-- [ ] Friends and settings
-- [ ] Duel workspace with code editor
-- [ ] Backend API
+- Duel workspace with Monaco editor
+- Backend — FastAPI + PostgreSQL
+- WebSocket real-time engine
