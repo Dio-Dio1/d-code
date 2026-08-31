@@ -8,6 +8,7 @@ Think LeetCode meets a fighting game — timed, live, and against a real opponen
 - React 19 + Vite 8
 - Tailwind CSS v4
 - lucide-react icons
+- Monaco Editor
 
 ## Getting Started
 
@@ -18,17 +19,25 @@ npm run dev
 
 ## What's built
 
-- Dashboard with stats and activity chart
-- Problems page with search and filters
-- Leaderboard with tier badges and ranking
-- Profile with achievements and activity feed
-- Match history and solved problems
-- Friends list with requests and suggestions
-- Settings — account, editor preferences, notifications
-- Daily coding puzzles with interactive feedback
+The full frontend is complete across 10 pages.
 
-## Up next
+- **Dashboard** — stat cards, recent duels, daily challenge, activity chart
+- **Problems** — search, difficulty and topic filters, daily challenge banner
+- **Leaderboard** — global, friends, and weekly rankings with tier badges
+- **Profile** — stats, achievements, activity feed, rating history
+- **Match history** — past duels and solved problems
+- **Friends** — friends list, incoming requests, suggested players
+- **Settings** — account info, editor preferences, notifications, privacy
+- **Puzzles** — daily coding puzzles with answer feedback
+- **Solve workspace** — Monaco editor with problem panel and test runner
+- **Ranked duel** — live countdown timer, opponent telemetry, submission flow
 
-- Duel workspace with Monaco editor
-- Backend — FastAPI + PostgreSQL
-- WebSocket real-time engine
+## In progress
+
+Backend is next. Planning to build with FastAPI + PostgreSQL.
+
+- [ ] Auth — register, login, JWT
+- [ ] Problems API
+- [ ] User profiles and match history
+- [ ] WebSocket duel engine
+- [ ] Code execution sandbox
