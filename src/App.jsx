@@ -7,9 +7,9 @@ import CasualDuelPage from "./Components/Duel/CasualDuelPage"
 import CustomRoomPage from "./Components/Duel/CustomRoomPage"
 import ProblemsPage from "./Components/Problems/ProblemsPage"
 import SolveWorkspace from "./Components/Problems/SolveWorkspace"
-import LeaderboardPage from "./Components/Leaderboard/LeaderboardPage"
 import ProfilePage from "./Components/Profile/ProfilePage"
 import SettingsPage from "./Components/Settings/SettingsPage"
+import LeaderboardPage from "./Components/Leaderboard/LeaderboardPage"
 import HistoryPage from "./Components/History/HistoryPage"
 import FriendsPage from "./Components/Friends/FriendsPage"
 import PuzzlesPage from "./Components/Puzzles/PuzzlesPage"
@@ -58,9 +58,7 @@ const App = () => {
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
         selectedProblem={selectedProblem}
-        setSelectedProblem={setSelectedProblem}
         navigateTo={navigateTo}
         navigateHome={navigateHome}
         navigateToProblem={navigateToProblem}
@@ -78,8 +76,8 @@ const AppContent = ({
 }) => {
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
-        <div className="text-[#8b5cf6] font-mono text-sm animate-pulse">Loading...</div>
+      <div className="min-h-screen bg-void flex items-center justify-center">
+        <div className="text-accent font-mono text-sm animate-pulse">Loading...</div>
       </div>
     )
   }
@@ -105,7 +103,7 @@ const AppContent = ({
   }
 
   const withSidebar = (children) => (
-    <div className="flex min-h-screen bg-[#0d1117]">
+    <div className="flex min-h-screen bg-void">
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed(!collapsed)}
@@ -121,20 +119,20 @@ const AppContent = ({
   )
 
   switch (currentPage) {
-    case "leaderboard":
-      return withSidebar(<LeaderboardPage />)
     case "problems":
       return withSidebar(<ProblemsPage onNavigateToProblem={navigateToProblem} />)
     case "profile":
       return withSidebar(<ProfilePage onNavigate={navigateTo} />)
-    case "settings":
-      return withSidebar(<SettingsPage />)
-    case "history":
-      return withSidebar(<HistoryPage />)
     case "friends":
       return withSidebar(<FriendsPage onNavigate={navigateTo} />)
+    case "settings":
+      return withSidebar(<SettingsPage onNavigate={navigateTo} />)
+    case "leaderboard":
+      return withSidebar(<LeaderboardPage onNavigate={navigateTo} />)
+    case "history":
+      return withSidebar(<HistoryPage onNavigate={navigateTo} />)
     case "puzzles":
-      return withSidebar(<PuzzlesPage />)
+      return withSidebar(<PuzzlesPage onNavigate={navigateTo} />)
     default:
       return withSidebar(<Dashboard collapsed={collapsed} onNavigate={navigateTo} />)
   }
