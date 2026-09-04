@@ -1,103 +1,112 @@
-// Sidebar.jsx
-import React from 'react'
+import React from "react"
 import {
-  LayoutDashboard,
+  Home,
   Swords,
-  PlaySquare,
-  Users,
+  Code2,
   User,
-  Settings,
+  Users,
   Trophy,
-  Terminal,
-  Activity,
-  ShieldAlert
-} from 'lucide-react'
+  Clock,
+  Brain,
+  Settings,
+  ChevronsLeft,
+  ChevronsRight,
+  LogOut,
+} from "lucide-react"
+import { useAuth } from "../../contexts/AuthContext"
 
-const Sidebar = () => {
+const navItems = [
+  { icon: Home, text: "Home", navigateTo: "dashboard" },
+  { icon: Code2, text: "Problems", navigateTo: "problems" },
+  { icon: Swords, text: "Duel", navigateTo: "duel" },
+  { icon: Trophy, text: "Leaderboard", navigateTo: "leaderboard" },
+  { icon: Users, text: "Friends", navigateTo: "friends" },
+  { icon: Brain, text: "Puzzles", navigateTo: "puzzles" },
+  { icon: Clock, text: "History", navigateTo: "history" },
+  { icon: User, text: "Profile", navigateTo: "profile" },
+  { icon: Settings, text: "Settings", navigateTo: "settings" },
+]
+
+const Sidebar = ({ collapsed, onToggle, onNavigate, currentPage, onLogout, loggedIn }) => {
+  const { user } = useAuth()
+  const w = collapsed ? "w-[64px]" : "w-[220px]"
+
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-zinc-800/60 bg-zinc-950 text-zinc-300 font-sans select-none">
-      {/* Brand Header */}
-      <div className="flex items-center gap-3 border-b border-zinc-900 px-6 py-5 bg-zinc-950/80 backdrop-blur-md">
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 shadow-md shadow-violet-500/10">
-          <Terminal size={18} className="text-white" strokeWidth={2.5} />
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-violet-500"></span>
-          </span>
+    <aside
+      className={`${w} flex h-screen sticky top-0 flex-col border-r border-border bg-surface transition-all duration-200 select-none shrink-0`}
+    >
+      <div className={`flex items-center border-b border-border ${collapsed ? "justify-center px-2 py-4" : "gap-3 px-4 py-4"}`}>
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shrink-0">
+          <span className="text-xs font-black font-mono text-white leading-none">&gt;_</span>
         </div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <h1 className="text-sm font-extrabold tracking-tight text-white">
-              D:CODE
-            </h1>
-            <span className="bg-violet-500/10 border border-violet-500/30 text-[9px] px-1.5 py-0.5 rounded font-mono text-violet-400 font-medium">
-              v2.4
-            </span>
+        {!collapsed && (
+          <div className="flex flex-col">
+            <span className="text-sm font-black tracking-wider text-text-primary font-sans">D:CODE</span>
+            <span className="text-[10px] font-sans text-text-tertiary uppercase tracking-widest font-semibold">Arena Platform</span>
           </div>
-          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mt-0.5">
-            runtime arena
-          </p>
-        </div>
+        )}
       </div>
 
-      {/* Nav Menu */}
-      <nav className="flex flex-1 flex-col justify-between p-4 space-y-6">
-        <div className="space-y-6">
-          {/* Section: Operate */}
-          <div>
-            <div className="mb-2 px-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              <span>OPERATE</span>
-              <Activity size={12} className="text-zinc-600" />
-            </div>
-            <div className="space-y-1">
-              <button className="flex w-full items-center gap-3 rounded-lg bg-zinc-900 border border-zinc-800 px-3.5 py-2 text-xs font-semibold text-white transition-all shadow-sm shadow-black/25">
-                <LayoutDashboard size={16} className="text-violet-400" />
-                <span>Overview</span>
+      <nav className="flex flex-1 flex-col justify-between py-3 px-2 overflow-y-auto">
+        <div className="space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = currentPage === item.navigateTo
+            return (
+              <button
+                key={item.text}
+                title={collapsed ? item.text : undefined}
+                onClick={() => onNavigate && onNavigate(item.navigateTo)}
+                className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-semibold transition-all ${
+                  isActive
+                    ? "bg-accent/12 text-accent border border-accent/25"
+                    : "text-text-tertiary hover:bg-elevated hover:text-text-primary border border-transparent"
+                } ${collapsed ? "justify-center" : ""}`}
+              >
+                <Icon size={17} className={isActive ? "text-accent" : "text-text-tertiary"} strokeWidth={isActive ? 2.5 : 2} />
+                {!collapsed && <span className="flex-1 text-left truncate">{item.text}</span>}
               </button>
-
-              <button className="flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-zinc-900/40 hover:text-zinc-200">
-                <Swords size={16} className="text-zinc-400 group-hover:text-zinc-300" />
-                <span>Duel</span>
-                <span className="ml-auto text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded-full font-bold tracking-wider">LIVE</span>
-              </button>
-
-              <button className="flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-zinc-900/40 hover:text-zinc-200">
-                <PlaySquare size={16} className="text-zinc-400" />
-                <span>Spectate</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Section: Network */}
-          <div>
-            <div className="mb-2 px-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              <span>NETWORK</span>
-              <ShieldAlert size={12} className="text-zinc-600" />
-            </div>
-            <div className="space-y-1">
-              <button className="flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-zinc-900/40 hover:text-zinc-200">
-                <Users size={16} className="text-zinc-400" />
-                <span>Players</span>
-              </button>
-
-              <button className="flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-zinc-900/40 hover:text-zinc-200">
-                <Trophy size={16} className="text-zinc-400" />
-                <span>Leaderboard</span>
-              </button>
-            </div>
-          </div>
+            )
+          })}
         </div>
 
-        {/* Footer Navigation */}
-        <div className="border-t border-zinc-900 pt-4 space-y-1">
-          <button className="flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-zinc-900/40 hover:text-zinc-200">
-            <User size={16} className="text-zinc-400" />
-            <span>Profile</span>
-          </button>
+        <div className="space-y-1 pt-2">
+          <div className="my-2 mx-2 border-t border-border" />
 
-          <button className="flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-zinc-900/40 hover:text-zinc-200">
-            <Settings size={16} className="text-zinc-400" />
-            <span>Settings</span>
+          <div className={`flex items-center rounded-lg bg-base border border-border p-2 ${collapsed ? "justify-center" : "gap-2.5"}`}>
+            <div className="relative shrink-0">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold font-mono ${loggedIn ? "bg-accent/12 text-accent border border-accent/25" : "bg-elevated text-text-tertiary border border-border"}`}>
+                {loggedIn ? (user?.avatar || user?.username?.slice(0, 2).toUpperCase() || "U") : "?"}
+              </div>
+              {loggedIn && <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-success border-2 border-surface" />}
+            </div>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-text-primary truncate leading-tight">{loggedIn ? (user?.username || "user") : "Guest"}</p>
+                <p className="text-[10px] text-text-tertiary font-sans leading-tight mt-0.5">
+                  {loggedIn ? <><span className="text-success font-semibold">{user?.rating || 1000}</span> · #{user?.rank || "---"}</> : "Not signed in"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {loggedIn && (
+            <button
+              onClick={onLogout}
+              title={collapsed ? "Sign Out" : undefined}
+              className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-semibold text-text-tertiary hover:bg-danger/12 hover:text-danger border border-transparent hover:border-danger/25 transition-all ${collapsed ? "justify-center" : ""}`}
+            >
+              <LogOut size={17} strokeWidth={2} />
+              {!collapsed && <span>Sign Out</span>}
+            </button>
+          )}
+
+          <button
+            onClick={onToggle}
+            className="flex w-full items-center justify-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-text-tertiary hover:bg-elevated hover:text-text-primary transition-colors mt-2 border border-border/50"
+          >
+            {collapsed ? <ChevronsRight size={16} strokeWidth={2} /> : <ChevronsLeft size={16} strokeWidth={2} />}
+            {!collapsed && <span>Collapse</span>}
           </button>
         </div>
       </nav>
