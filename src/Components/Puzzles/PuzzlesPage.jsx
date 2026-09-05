@@ -1,236 +1,195 @@
 import React, { useState } from "react"
-import {
-  Puzzle,
-  Terminal,
-  Clock,
-  Zap,
-  Trophy,
-  Flame,
-  Target,
-  Check,
-  X,
-  ChevronRight,
-  RotateCcw,
-  Lightbulb,
-} from "lucide-react"
-
-import { puzzles, puzzleStats } from "../../data/puzzlesData"
+import { Zap, Trophy, Target, Flame, Check, X, Code2, ChevronDown } from "lucide-react"
+import { puzzles, puzzlesStats } from "../../data/puzzlesData"
 import { difficultyBadge } from "../../utils/badges"
 
-const PuzzlesPage = () => {
-  const [answers, setAnswers] = useState({})
-  const [submitted, setSubmitted] = useState({})
-  const [showExplanation, setShowExplanation] = useState({})
+const PuzzlesPage = ({ _onNavigate }) => {
   const [selectedPuzzle, setSelectedPuzzle] = useState(null)
+  const [answers, setAnswers] = useState({})
+  const [difficultyFilter, setDifficultyFilter] = useState("All")
+  const [languageFilter, setLanguageFilter] = useState("All")
 
-  const safePuzzles = puzzles || []
-  const safeStats = puzzleStats || {}
+  const filteredPuzzles = puzzles.filter((p) => {
+    if (difficultyFilter !== "All" && p.difficulty !== difficultyFilter) return false
+    if (languageFilter !== "All" && p.language !== languageFilter) return false
+    return true
+  })
 
-  const handleAnswer = (puzzleId, answerIndex) => {
-    if (submitted[puzzleId]) return
-    setAnswers({ ...answers, [puzzleId]: answerIndex })
+  const handleAnswer = (puzzleId, optionIndex) => {
+    if (answers[puzzleId] !== undefined) return
+    setAnswers((prev) => ({ ...prev, [puzzleId]: optionIndex }))
   }
 
-  const handleSubmit = (puzzleId) => {
-    if (answers[puzzleId] === undefined) return
-    setSubmitted({ ...submitted, [puzzleId]: true })
+  const isCorrect = (puzzleId, correctIndex) => {
+    return answers[puzzleId] === correctIndex
   }
 
-  const handleReset = (puzzleId) => {
-    setAnswers({ ...answers, [puzzleId]: undefined })
-    setSubmitted({ ...submitted, [puzzleId]: false })
-    setShowExplanation({ ...showExplanation, [puzzleId]: false })
+  const languageBadge = (lang) => {
+    if (lang === "JavaScript") return "text-warning bg-warning/12 border border-warning/25"
+    return "text-info bg-info/12 border border-info/25"
   }
 
-  const isCorrect = (puzzleId) => {
-    const puzzle = safePuzzles.find((p) => p.id === puzzleId)
-    return puzzle ? answers[puzzleId] === puzzle.correctAnswer : false
-  }
+  const stats = [
+    { icon: Target, label: "Attempted", value: puzzlesStats.totalAttempted },
+    { icon: Check, label: "Correct", value: puzzlesStats.correct },
+    { icon: Flame, label: "Streak", value: puzzlesStats.streak },
+    { icon: Zap, label: "XP", value: puzzlesStats.xp.toLocaleString() },
+    { icon: Trophy, label: "Rank", value: puzzlesStats.rank },
+  ]
 
-  const totalSolved = safeStats.totalSolved || 0
-  const totalAttempted = safeStats.totalAttempted || 1
-  const accuracy = Math.round((totalSolved / totalAttempted) * 100)
+  const filters = [
+    { label: "Difficulty", value: difficultyFilter, onChange: setDifficultyFilter, options: ["All", "Easy", "Medium", "Hard"] },
+    { label: "Language", value: languageFilter, onChange: setLanguageFilter, options: ["All", "JavaScript", "Python"] },
+  ]
 
   return (
-    <div className="min-h-screen bg-[#0d1117] font-sans text-[#8b949e] antialiased p-4 md:p-8 flex justify-center">
-
-      <div className="w-full max-w-7xl space-y-6">
-
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#30363d]">
+    <div className="min-h-screen bg-void text-text-secondary antialiased">
+      <div className="mx-auto max-w-[1120px] px-8 py-6 space-y-6">
+        <header className="flex items-center justify-between pb-2 border-b border-border">
           <div>
-            <h1 className="text-2xl font-extrabold text-[#e6edf3] tracking-tight flex items-center gap-2">
-              <Puzzle size={22} className="text-[#8b5cf6]" /> Puzzles
-            </h1>
-            <p className="text-xs font-mono text-[#6e7681] mt-1">Test your speed and syntax with daily rapid-fire coding puzzles</p>
+            <h1 className="text-2xl font-extrabold text-text-primary tracking-tight">Puzzles</h1>
+            <p className="text-sm font-medium text-text-tertiary mt-1">Test your code knowledge</p>
           </div>
         </header>
 
-        <section className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
-          {[
-            { icon: Trophy, label: "Total Solved", value: totalSolved, color: "text-[#f59e0b]", bg: "bg-[#f59e0b]/12", border: "border-[#f59e0b]/25" },
-            { icon: Target, label: "Accuracy", value: `${accuracy}%`, color: "text-[#22c55e]", bg: "bg-[#22c55e]/12", border: "border-[#22c55e]/25" },
-            { icon: Flame, label: "Best Streak", value: safeStats.bestStreak || 0, color: "text-[#ef4444]", bg: "bg-[#ef4444]/12", border: "border-[#ef4444]/25" },
-            { icon: Zap, label: "Total XP", value: (safeStats.totalXP || 0).toLocaleString(), color: "text-[#3b82f6]", bg: "bg-[#3b82f6]/12", border: "border-[#3b82f6]/25" },
-            { icon: Trophy, label: "Puzzle Rank", value: `#${safeStats.rank || "---"}`, color: "text-[#8b5cf6]", bg: "bg-[#8b5cf6]/12", border: "border-[#8b5cf6]/25" },
-          ].map((s) => {
+        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+          {stats.map((s) => {
             const Icon = s.icon
             return (
-              <div key={s.label} className={`rounded-xl bg-[#1c2128] border ${s.border} p-4 flex items-center gap-3.5`}>
-                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${s.bg}`}>
-                  <Icon size={20} className={s.color} strokeWidth={2.2} />
+              <div key={s.label} className="rounded-xl bg-surface border border-border p-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-elevated">
+                  <Icon size={18} className="text-text-secondary" strokeWidth={2.2} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-lg font-extrabold font-mono text-[#e6edf3] leading-tight truncate">{s.value}</p>
-                  <p className="text-[10px] font-bold text-[#6e7681] uppercase tracking-wider mt-0.5">{s.label}</p>
+                  <p className="text-lg font-extrabold font-mono text-text-primary leading-tight truncate">{s.value}</p>
+                  <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider mt-0.5">{s.label}</p>
                 </div>
               </div>
             )
           })}
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {safePuzzles.map((puzzle) => (
-            <div
-              key={puzzle.id}
-              onClick={() => setSelectedPuzzle(puzzle.id)}
-              className={`rounded-xl border overflow-hidden transition-all ${
-                selectedPuzzle === puzzle.id
-                  ? "border-[#8b5cf6]/50 ring-1 ring-[#8b5cf6]/20"
-                  : "border-[#30363d] hover:border-[#484f58]"
-              } bg-[#1c2128]`}
-            >
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#30363d]">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-[#8b5cf6]/12 text-[#8b5cf6]">
-                    <Terminal size={16} strokeWidth={2.2} />
-                  </div>
-                  <span className="text-xs font-extrabold text-[#e6edf3] uppercase tracking-wider">
-                    {puzzle.title}
-                  </span>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border ${difficultyBadge(puzzle.difficulty)}`}>
-                    {puzzle.difficulty}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-xs font-semibold text-[#6e7681]">
-                  <span>{(puzzle.solvedBy || 0).toLocaleString()} solved</span>
-                  <span className="flex items-center gap-1.5 text-[#f59e0b] bg-[#f59e0b]/12 border border-[#f59e0b]/25 px-2 py-0.5 rounded-md font-mono text-[11px]">
-                    <Clock size={12} />
-                    +{puzzle.xp} XP
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-5 space-y-4">
-                <div className="rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden font-mono text-xs">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-[#30363d]">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/80" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/80" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/80" />
-                      <span className="text-[11px] text-[#6e7681] font-semibold ml-2">puzzle.js</span>
-                    </div>
-                    <span className="text-[10px] text-[#484f58]">{puzzle.language}</span>
-                  </div>
-                  <pre className="p-4 text-[#8b949e] leading-relaxed overflow-x-auto">
-                    <code>{puzzle.code}</code>
-                  </pre>
-                </div>
-
-                <p className="text-xs font-bold text-[#e6edf3] flex items-center gap-2">
-                  <Lightbulb size={14} className="text-[#f59e0b] shrink-0" /> {puzzle.question}
-                </p>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  {(puzzle.answers || []).map((answer, i) => {
-                    const isSelected = answers[puzzle.id] === i
-                    const isSubmitted = submitted[puzzle.id]
-                    const isAnswerCorrect = isSubmitted && i === puzzle.correctAnswer
-                    const isWrong = isSubmitted && isSelected && i !== puzzle.correctAnswer
-
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => handleAnswer(puzzle.id, i)}
-                        disabled={isSubmitted}
-                        className={`rounded-xl border px-3 py-2.5 text-left text-xs font-mono font-semibold transition-all cursor-pointer ${
-                          isAnswerCorrect
-                            ? "border-[#22c55e]/50 bg-[#22c55e]/12 text-[#22c55e]"
-                            : isWrong
-                            ? "border-[#ef4444]/50 bg-[#ef4444]/12 text-[#ef4444]"
-                            : isSelected
-                            ? "border-[#8b5cf6]/50 bg-[#8b5cf6]/12 text-[#8b5cf6]"
-                            : "border-[#30363d] bg-[#0d1117] text-[#8b949e] hover:bg-[#8b5cf6]/8 hover:border-[#8b5cf6]/25 hover:text-[#8b5cf6]"
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-extrabold shrink-0 ${
-                            isAnswerCorrect
-                              ? "bg-[#22c55e]/12 text-[#22c55e]"
-                              : isWrong
-                              ? "bg-[#ef4444]/12 text-[#ef4444]"
-                              : isSelected
-                              ? "bg-[#8b5cf6]/12 text-[#8b5cf6]"
-                              : "bg-[#21262d] text-[#484f58]"
-                          }`}>
-                            {isAnswerCorrect ? (
-                              <Check size={10} strokeWidth={3} />
-                            ) : isWrong ? (
-                              <X size={10} strokeWidth={3} />
-                            ) : (
-                              String.fromCharCode(65 + i)
-                            )}
-                          </span>
-                          <span className="truncate">{answer}</span>
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <div className="border-t border-[#30363d] px-5 py-3 flex justify-between items-center">
-                {!submitted[puzzle.id] ? (
-                  <>
-                    <span className="text-xs text-[#6e7681] font-medium">
-                      {answers[puzzle.id] !== undefined ? "Ready to submit" : "Select an answer"}
-                    </span>
-                    <button
-                      onClick={() => handleSubmit(puzzle.id)}
-                      disabled={answers[puzzle.id] === undefined}
-                      className={`text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all ${
-                        answers[puzzle.id] !== undefined
-                          ? "text-[#e6edf3] bg-[#8b5cf6] hover:bg-[#7c3aed] cursor-pointer"
-                          : "text-[#484f58] bg-[#21262d] cursor-not-allowed"
-                      }`}
-                    >
-                      Submit <ChevronRight size={14} />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-3">
-                      {isCorrect(puzzle.id) ? (
-                        <span className="text-xs font-bold text-[#22c55e] flex items-center gap-1.5">
-                          <Check size={14} /> Correct! +{puzzle.xp} XP
-                        </span>
-                      ) : (
-                        <span className="text-xs font-bold text-[#ef4444] flex items-center gap-1.5">
-                          <X size={14} /> Incorrect
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleReset(puzzle.id)}
-                      className="text-xs font-bold text-[#6e7681] hover:text-[#e6edf3] flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <RotateCcw size={13} /> Try Again
-                    </button>
-                  </>
-                )}
-              </div>
+        <section className="flex flex-wrap items-center gap-3">
+          {filters.map((f) => (
+            <div key={f.label} className="relative">
+              <select
+                value={f.value}
+                onChange={(e) => f.onChange(e.target.value)}
+                className="appearance-none bg-surface border border-border rounded-lg px-3 py-2 pr-8 text-sm font-medium text-text-primary hover:border-text-tertiary/40 focus:outline-none focus:border-accent transition-colors cursor-pointer"
+              >
+                {f.options.map((opt) => (
+                  <option key={opt} value={opt}>{opt === "All" ? `All ${f.label}s` : opt}</option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
             </div>
           ))}
-        </div>
+          <span className="text-xs font-medium text-text-tertiary">{filteredPuzzles.length} puzzles</span>
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredPuzzles.map((puzzle) => {
+            const isSelected = selectedPuzzle === puzzle.id
+            const hasAnswered = answers[puzzle.id] !== undefined
+            const wasCorrect = hasAnswered && isCorrect(puzzle.id, puzzle.correctIndex)
+
+            return (
+              <div
+                key={puzzle.id}
+                onClick={() => setSelectedPuzzle(isSelected ? null : puzzle.id)}
+                className={`rounded-xl border transition-all cursor-pointer ${
+                  isSelected
+                    ? hasAnswered
+                      ? wasCorrect
+                        ? "bg-surface border-success/50"
+                        : "bg-surface border-danger/50"
+                      : "bg-surface border-accent/50"
+                    : "bg-surface border-border hover:border-text-tertiary/40"
+                }`}
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-sm font-bold text-text-primary leading-snug">{puzzle.title}</h3>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${difficultyBadge(puzzle.difficulty)}`}>
+                        {puzzle.difficulty}
+                      </span>
+                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${languageBadge(puzzle.language)}`}>
+                        {puzzle.language}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <Zap size={12} className="text-info" />
+                    <span className="text-[10px] font-bold text-info">{puzzle.xp} XP</span>
+                    {hasAnswered && (
+                      <span className={`ml-auto text-[10px] font-bold ${wasCorrect ? "text-success" : "text-danger"}`}>
+                        {wasCorrect ? "Correct" : "Wrong"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {isSelected && (
+                  <div className="border-t border-border p-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="rounded-lg bg-void border border-border p-3">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Code2 size={12} className="text-text-secondary" />
+                        <span className="text-[10px] font-bold text-text-tertiary uppercase">Code</span>
+                      </div>
+                      <pre className="text-xs font-mono text-text-primary whitespace-pre-wrap overflow-x-auto">{puzzle.code}</pre>
+                    </div>
+
+                    <p className="text-sm font-semibold text-text-primary">{puzzle.question}</p>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {puzzle.options.map((option, idx) => {
+                        const letter = String.fromCharCode(65 + idx)
+                        const isSelectedOption = answers[puzzle.id] === idx
+                        const isCorrectOption = idx === puzzle.correctIndex
+                        const showResult = hasAnswered
+
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => handleAnswer(puzzle.id, idx)}
+                            disabled={hasAnswered}
+                            className={`p-2.5 rounded-lg border text-left transition-all ${
+                              showResult
+                                ? isCorrectOption
+                                  ? "bg-success/12 border-success/50 text-success"
+                                  : isSelectedOption && !isCorrectOption
+                                    ? "bg-danger/12 border-danger/50 text-danger"
+                                    : "bg-void border-border text-text-tertiary"
+                                : isSelectedOption
+                                  ? "bg-accent/12 border-accent/50 text-accent"
+                                  : "bg-void border-border text-text-primary hover:border-text-tertiary/40"
+                            }`}
+                          >
+                            <span className="text-[10px] font-mono font-bold opacity-60">{letter}.</span>
+                            <span className="text-xs font-medium ml-1">{option}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {hasAnswered && (
+                      <div className={`rounded-lg p-3 border ${wasCorrect ? "bg-success/8 border-success/25" : "bg-danger/8 border-danger/25"}`}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          {wasCorrect ? <Check size={14} className="text-success" /> : <X size={14} className="text-danger" />}
+                          <span className={`text-xs font-bold ${wasCorrect ? "text-success" : "text-danger"}`}>
+                            {wasCorrect ? "Correct!" : "Incorrect"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-text-secondary">{puzzle.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </section>
       </div>
     </div>
   )
