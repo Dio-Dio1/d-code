@@ -1,298 +1,328 @@
 import React, { useState } from "react"
 import {
   Settings,
-  User,
-  Bell,
-  Shield,
-  Palette,
-  Code2,
+  Trash2,
   Save,
   Check,
+  X,
+  ChevronDown,
   ChevronRight,
-  Globe,
-  Mail,
-  Link,
-  AtSign,
-  Trophy,
 } from "lucide-react"
-
 import { settings } from "../../data/settingsData"
-import Toggle from "../ui/Toggle"
 
-const SettingsPage = () => {
-  const [activeSection, setActiveSection] = useState("account")
-  const [saved, setSaved] = useState(false)
-  const [prefs, setPrefs] = useState(settings.preferences)
-  const [notifs, setNotifs] = useState(settings.notifications)
+const SectionHeader = ({ label, isOpen, onClick }) => (
+  <button
+    onClick={onClick}
+    className="w-full flex items-center justify-between py-4 px-1 text-left"
+  >
+    <span className="text-xs font-bold uppercase tracking-wider text-text-primary">
+      {label}
+    </span>
+    {isOpen ? <ChevronDown size={14} className="text-text-tertiary" /> : <ChevronRight size={14} className="text-text-tertiary" />}
+  </button>
+)
+
+const SettingsPage = ({ onNavigate: _onNavigate }) => {
+  const [form, setForm] = useState({
+    ...settings.account,
+    ...settings.editor,
+  })
+  const [notifications, setNotifications] = useState(settings.notifications)
   const [privacy, setPrivacy] = useState(settings.privacy)
+  const [collapsedSections, setCollapsedSections] = useState({})
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const toggleSection = (section) => {
+    setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }))
+  }
 
   const handleSave = () => {
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const sections = [
-    { id: "account", label: "Account", icon: User },
-    { id: "preferences", label: "Editor", icon: Code2 },
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "privacy", label: "Privacy", icon: Shield },
-    { id: "appearance", label: "Appearance", icon: Palette },
+  const themes = [
+    { id: "dark", label: "Dark", colors: ["#0d1117", "#1c2128", "#30363d", "#8b5cf6"] },
+    { id: "midnight", label: "Midnight", colors: ["#0f0f1a", "#1a1a2e", "#2d2d44", "#6366f1"] },
+    { id: "terminal", label: "Terminal", colors: ["#0a0a0a", "#111111", "#1f1f1f", "#22c55e"] },
+    { id: "ocean", label: "Ocean", colors: ["#0c1929", "#162d4a", "#1e3a5f", "#3b82f6"] },
+    { id: "sunset", label: "Sunset", colors: ["#1a0f0f", "#2d1a1a", "#442d2d", "#f97316"] },
   ]
 
+  const inputClass = "w-full px-3 py-2 text-xs bg-void border border-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
+
   return (
-    <div className="min-h-screen bg-[#0d1117] font-sans text-[#8b949e] antialiased">
-      <div className="mx-auto max-w-[1120px] px-8 py-6 space-y-5">
+    <div className="min-h-screen bg-void font-sans text-text-secondary antialiased p-4 md:p-8 flex justify-center">
+      <div className="w-full max-w-3xl space-y-6">
 
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#30363d]">
-          <div>
-            <h1 className="text-2xl font-extrabold text-[#e6edf3] tracking-tight flex items-center gap-2">
-              <Settings size={22} className="text-[#6e7681]" /> Settings
-            </h1>
-            <p className="text-sm font-medium text-[#6e7681] mt-1">Manage your account and preferences</p>
+        <div className="rounded-xl bg-surface border border-border p-6 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-elevated border border-border flex items-center justify-center">
+            <Settings size={20} className="text-text-tertiary" />
           </div>
-          <button
-            onClick={handleSave}
-            className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-lg transition-all ${
-              saved
-                ? "bg-[#22c55e]/12 text-[#22c55e] border border-[#22c55e]/25"
-                : "bg-[#8b5cf6] hover:bg-[#7c3aed] text-white"
-            }`}
-          >
-            {saved ? <Check size={14} /> : <Save size={14} />}
-            {saved ? "Saved!" : "Save Changes"}
-          </button>
-        </header>
+          <div>
+            <h1 className="text-xl font-extrabold text-text-primary">Settings</h1>
+            <p className="text-xs text-text-tertiary">Manage your account preferences</p>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
-          <nav className="space-y-1">
-            {sections.map((sec) => {
-              const Icon = sec.icon
-              return (
-                <button
-                  key={sec.id}
-                  onClick={() => setActiveSection(sec.id)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold transition-all ${
-                    activeSection === sec.id
-                      ? "bg-[#8b5cf6]/12 text-[#8b5cf6] border border-[#8b5cf6]/25"
-                      : "text-[#6e7681] hover:bg-[#21262d] hover:text-[#e6edf3] border border-transparent"
-                  }`}
-                >
-                  <Icon size={17} className={activeSection === sec.id ? "text-[#8b5cf6]" : "text-[#6e7681]"} strokeWidth={2} />
-                  <span>{sec.label}</span>
-                  <ChevronRight size={14} className="ml-auto text-[#484f58]" />
-                </button>
-              )
-            })}
-          </nav>
-
-          <div className="rounded-xl border border-[#30363d] bg-[#1c2128] overflow-hidden">
-
-            {activeSection === "account" && (
-              <div className="p-6 space-y-6">
+        <div className="rounded-xl bg-surface border border-border p-6 space-y-2">
+          <SectionHeader label="Account" isOpen={!collapsedSections.account} onClick={() => toggleSection("account")} />
+          {!collapsedSections.account && (
+            <div className="grid gap-4 pt-4 pb-2">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Username</label>
+                <input
+                  type="text"
+                  value={form.username}
+                  disabled
+                  className={`${inputClass} opacity-50 cursor-not-allowed`}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Bio</label>
+                <textarea
+                  value={form.bio}
+                  onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                  className={`${inputClass} min-h-[80px] resize-y`}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <h3 className="text-sm font-bold text-[#e6edf3] uppercase tracking-wider mb-4">Account Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Username</label>
-                      <input type="text" defaultValue={settings.account.username} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Email</label>
-                      <input type="email" defaultValue={settings.account.email} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Display Name</label>
-                      <input type="text" defaultValue={settings.account.name} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Location</label>
-                      <input type="text" defaultValue={settings.account.location} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all" />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Bio</label>
-                      <textarea defaultValue={settings.account.bio} rows={3} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all resize-none" />
-                    </div>
-                  </div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">GitHub</label>
+                  <input
+                    type="text"
+                    value={form.github}
+                    onChange={(e) => setForm({ ...form, github: e.target.value })}
+                    className={inputClass}
+                  />
                 </div>
-
-                <div className="border-t border-[#30363d] pt-6">
-                  <h3 className="text-sm font-bold text-[#e6edf3] uppercase tracking-wider mb-4">Social Links</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider flex items-center gap-1.5"><Link size={12} /> GitHub</label>
-                      <input type="text" defaultValue={settings.account.github} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider flex items-center gap-1.5"><Globe size={12} /> Website</label>
-                      <input type="text" defaultValue={settings.account.website} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider flex items-center gap-1.5"><AtSign size={12} /> Twitter</label>
-                      <input type="text" defaultValue={settings.account.twitter} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] placeholder:text-[#6e7681] focus:outline-none focus:border-[#8b5cf6] transition-all" />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Twitter</label>
+                  <input
+                    type="text"
+                    value={form.twitter}
+                    onChange={(e) => setForm({ ...form, twitter: e.target.value })}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Website</label>
+                  <input
+                    type="url"
+                    value={form.website}
+                    onChange={(e) => setForm({ ...form, website: e.target.value })}
+                    className={inputClass}
+                  />
                 </div>
               </div>
-            )}
+            </div>
+          )}
+        </div>
 
-            {activeSection === "preferences" && (
-              <div className="p-6 space-y-6">
-                <h3 className="text-sm font-bold text-[#e6edf3] uppercase tracking-wider mb-4">Editor Settings</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Default Language</label>
-                    <select value={prefs.language} onChange={(e) => setPrefs({ ...prefs, language: e.target.value })} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] focus:outline-none focus:border-[#8b5cf6] transition-all">
-                      {settings.languages.map((l) => (<option key={l} value={l}>{l}</option>))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Font Size</label>
-                    <select value={prefs.fontSize} onChange={(e) => setPrefs({ ...prefs, fontSize: e.target.value })} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] focus:outline-none focus:border-[#8b5cf6] transition-all">
-                      {settings.fontSizes.map((s) => (<option key={s} value={s}>{s}</option>))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Tab Size</label>
-                    <select value={prefs.tabSize} onChange={(e) => setPrefs({ ...prefs, tabSize: Number(e.target.value) })} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] focus:outline-none focus:border-[#8b5cf6] transition-all">
-                      <option value={2}>2 spaces</option>
-                      <option value={4}>4 spaces</option>
-                      <option value={8}>8 spaces</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Keybindings</label>
-                    <select value={prefs.keybindings} onChange={(e) => setPrefs({ ...prefs, keybindings: e.target.value })} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] focus:outline-none focus:border-[#8b5cf6] transition-all">
-                      {settings.keybindings.map((k) => (<option key={k.id} value={k.id}>{k.label} — {k.description}</option>))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="border-t border-[#30363d] pt-5 space-y-4">
-                  {[
-                    { key: "lineNumbers", label: "Line Numbers", desc: "Show line numbers in the editor" },
-                    { key: "wordWrap", label: "Word Wrap", desc: "Wrap long lines in the editor" },
-                    { key: "autoSave", label: "Auto Save", desc: "Automatically save your code" },
-                    { key: "minimap", label: "Minimap", desc: "Show minimap in the editor" },
-                  ].map((item) => (
-                    <div key={item.key} className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-[#e6edf3]">{item.label}</p>
-                        <p className="text-xs text-[#6e7681]">{item.desc}</p>
-                      </div>
-                      <Toggle checked={prefs[item.key]} onChange={(v) => setPrefs({ ...prefs, [item.key]: v })} />
-                    </div>
-                  ))}
+        <div className="rounded-xl bg-surface border border-border p-6 space-y-2">
+          <SectionHeader label="Editor Preferences" isOpen={!collapsedSections.editor} onClick={() => toggleSection("editor")} />
+          {!collapsedSections.editor && (
+            <div className="grid gap-4 pt-4 pb-2">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Language</label>
+                <select
+                  value={form.language}
+                  onChange={(e) => setForm({ ...form, language: e.target.value })}
+                  className={inputClass}
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="python">Python</option>
+                  <option value="cpp">C++</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Font Size ({form.fontSize}px)</label>
+                <input
+                  type="range"
+                  min="12"
+                  max="18"
+                  value={form.fontSize}
+                  onChange={(e) => setForm({ ...form, fontSize: Number(e.target.value) })}
+                  className="w-full accent-accent"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-text-tertiary mt-1">
+                  <span>12</span><span>18</span>
                 </div>
               </div>
-            )}
-
-            {activeSection === "notifications" && (
-              <div className="p-6 space-y-6">
-                <h3 className="text-sm font-bold text-[#e6edf3] uppercase tracking-wider mb-4">Notification Preferences</h3>
-                <div className="space-y-4">
-                  {[
-                    { key: "email", label: "Email Notifications", desc: "Receive notifications via email", icon: Mail },
-                    { key: "push", label: "Push Notifications", desc: "Receive browser push notifications", icon: Bell },
-                    { key: "duelRequests", label: "Duel Requests", desc: "When someone challenges you to a duel", icon: Shield },
-                    { key: "friendRequests", label: "Friend Requests", desc: "When someone sends you a friend request", icon: User },
-                    { key: "achievements", label: "Achievements", desc: "When you earn a new achievement", icon: Trophy },
-                    { key: "weeklyReport", label: "Weekly Report", desc: "Get a weekly summary of your activity", icon: Globe },
-                  ].map((item) => {
-                    const Icon = item.icon
-                    return (
-                      <div key={item.key} className="flex items-center justify-between p-3.5 rounded-lg bg-[#0d1117] border border-[#30363d]">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#21262d] text-[#6e7681]">
-                            <Icon size={16} strokeWidth={2} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-[#e6edf3]">{item.label}</p>
-                            <p className="text-xs text-[#6e7681]">{item.desc}</p>
-                          </div>
-                        </div>
-                        <Toggle checked={notifs[item.key]} onChange={(v) => setNotifs({ ...notifs, [item.key]: v })} />
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {activeSection === "privacy" && (
-              <div className="p-6 space-y-6">
-                <h3 className="text-sm font-bold text-[#e6edf3] uppercase tracking-wider mb-4">Privacy Settings</h3>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Profile Visibility</label>
-                    <select value={privacy.profileVisibility} onChange={(e) => setPrivacy({ ...privacy, profileVisibility: e.target.value })} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] focus:outline-none focus:border-[#8b5cf6] transition-all">
-                      <option value="everyone">Everyone</option>
-                      <option value="friends">Friends Only</option>
-                      <option value="nobody">Nobody</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#6e7681] uppercase tracking-wider">Allow Challenges From</label>
-                    <select value={privacy.allowChallenges} onChange={(e) => setPrivacy({ ...privacy, allowChallenges: e.target.value })} className="w-full px-4 py-2.5 text-sm font-medium bg-[#0d1117] border border-[#30363d] rounded-lg text-[#e6edf3] focus:outline-none focus:border-[#8b5cf6] transition-all">
-                      <option value="everyone">Everyone</option>
-                      <option value="friends">Friends Only</option>
-                      <option value="nobody">Nobody</option>
-                    </select>
-                  </div>
-
-                  <div className="border-t border-[#30363d] pt-4 space-y-4">
-                    {[
-                      { key: "showOnlineStatus", label: "Show Online Status", desc: "Let others see when you're online" },
-                      { key: "showRating", label: "Show Rating", desc: "Display your rating on your profile" },
-                      { key: "showActivity", label: "Show Activity", desc: "Let others see your recent activity" },
-                    ].map((item) => (
-                      <div key={item.key} className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-bold text-[#e6edf3]">{item.label}</p>
-                          <p className="text-xs text-[#6e7681]">{item.desc}</p>
-                        </div>
-                        <Toggle checked={privacy[item.key]} onChange={(v) => setPrivacy({ ...privacy, [item.key]: v })} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeSection === "appearance" && (
-              <div className="p-6 space-y-6">
-                <h3 className="text-sm font-bold text-[#e6edf3] uppercase tracking-wider mb-4">Theme</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {settings.themes.map((theme) => (
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Tab Size</label>
+                <div className="flex gap-2">
+                  {[2, 4].map((size) => (
                     <button
-                      key={theme.id}
-                      onClick={() => setPrefs({ ...prefs, theme: theme.id })}
-                      className={`p-4 rounded-lg border text-left transition-all ${
-                        prefs.theme === theme.id
-                          ? "border-[#8b5cf6]/50 bg-[#8b5cf6]/12"
-                          : "border-[#30363d] bg-[#0d1117] hover:border-[#484f58]"
+                      key={size}
+                      onClick={() => setForm({ ...form, tabSize: size })}
+                      className={`flex-1 px-3 py-2 text-xs font-mono rounded-lg border transition-colors ${
+                        form.tabSize === size
+                          ? "bg-accent/10 border-accent/25 text-accent"
+                          : "bg-void border-border text-text-tertiary hover:border-border"
                       }`}
                     >
-                      <div className={`w-full h-8 rounded-md mb-3 ${
-                        theme.id === "dark" ? "bg-[#1c2128]"
-                        : theme.id === "midnight" ? "bg-[#0a1628]"
-                        : theme.id === "light" ? "bg-gray-100"
-                        : "bg-[#272822]"
-                      }`} />
-                      <p className="text-sm font-bold text-[#e6edf3]">{theme.label}</p>
-                      <p className="text-[10px] text-[#6e7681] mt-0.5">{theme.description}</p>
-                      {prefs.theme === theme.id && (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#8b5cf6] mt-2">
-                          <Check size={10} /> Active
-                        </span>
-                      )}
+                      {size}
                     </button>
                   ))}
                 </div>
               </div>
-            )}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">Line Height</label>
+                <input
+                  type="number"
+                  min="1.2"
+                  max="2.0"
+                  step="0.1"
+                  value={form.lineHeight}
+                  onChange={(e) => setForm({ ...form, lineHeight: Number(e.target.value) })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-2">Theme</label>
+                <div className="grid grid-cols-5 gap-2">
+                  {themes.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setForm({ ...form, theme: t.id })}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${
+                        form.theme === t.id
+                          ? "bg-accent/10 border-accent/25"
+                          : "bg-void border-border hover:border-border"
+                      }`}
+                    >
+                      <div className="flex gap-1">
+                        {t.colors.map((c, i) => (
+                          <div
+                            key={i}
+                            className="w-3 h-3 rounded-full border border-border"
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-[10px] font-mono text-text-tertiary">{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl bg-surface border border-border p-6 space-y-2">
+          <SectionHeader label="Notifications" isOpen={!collapsedSections.notifications} onClick={() => toggleSection("notifications")} />
+          {!collapsedSections.notifications && (
+            <div className="grid gap-3 pt-4 pb-2">
+              {Object.entries(notifications).map(([key, val]) => (
+                <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-void border border-border">
+                  <span className="text-xs text-text-primary">{key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase())}</span>
+                  <button
+                    onClick={() => setNotifications((prev) => ({ ...prev, [key]: !prev[key] }))}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${
+                      val ? "bg-accent" : "bg-border"
+                    }`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-text-primary transition-transform ${
+                      val ? "translate-x-5" : "translate-x-0.5"
+                    }`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl bg-surface border border-border p-6 space-y-2">
+          <SectionHeader label="Privacy" isOpen={!collapsedSections.privacy} onClick={() => toggleSection("privacy")} />
+          {!collapsedSections.privacy && (
+            <div className="grid gap-3 pt-4 pb-2">
+              {Object.entries(privacy).map(([key, val]) => (
+                <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-void border border-border">
+                  <span className="text-xs text-text-primary">{key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase())}</span>
+                  <button
+                    onClick={() => setPrivacy((prev) => ({ ...prev, [key]: !prev[key] }))}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${
+                      val ? "bg-accent" : "bg-border"
+                    }`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-text-primary transition-transform ${
+                      val ? "translate-x-5" : "translate-x-0.5"
+                    }`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl bg-surface border border-danger/20 p-6 space-y-2">
+          <SectionHeader label="Danger Zone" isOpen={!collapsedSections.danger} onClick={() => toggleSection("danger")} />
+          {!collapsedSections.danger && (
+            <div className="pt-4 pb-2">
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-4 py-2 text-xs font-bold rounded-lg border border-danger/40 text-danger hover:bg-danger/10 transition-colors"
+              >
+                Delete Account
+              </button>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={handleSave}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${
+            saved
+              ? "bg-success/10 border border-success/25 text-success"
+              : "bg-accent text-white hover:bg-accent-muted"
+          }`}
+        >
+          {saved ? <><Check size={14} /> Saved</> : <><Save size={14} /> Save Changes</>}
+        </button>
+      </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="rounded-xl bg-surface border border-border p-6 w-full max-w-sm space-y-4">
+            <h3 className="text-sm font-bold text-danger">Delete Account</h3>
+            <p className="text-xs text-text-tertiary">This action cannot be undone. All your data will be permanently deleted.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg border border-border text-text-tertiary hover:text-text-secondary transition-colors"
+              >
+                <X size={12} /> Cancel
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg bg-danger/10 border border-danger/25 text-danger hover:bg-danger/20 transition-colors"
+              >
+                <Trash2 size={12} /> Delete
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
